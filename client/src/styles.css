@@ -1,0 +1,14 @@
+/* styles.css */
+
+body {
+  background-color: black;
+  margin: 0;
+  padding: 0;
+}
+
+.square {
+  position: absolute;
+  width: 5rem; /* Adjust size as needed */
+  height: 5rem; /* Adjust size as needed */
+  background-color: transparent;
+}

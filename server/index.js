@@ -36,8 +36,18 @@ io.on("connection", (socket) => {
   socket.on("move_square", (data) => {
     if (userSquares[data.id]) {
       // Update square position
-      userSquares[data.id].x = data.x;
-      userSquares[data.id].y = data.y;
+      const oldX = userSquares[data.id].x;
+      const oldY = userSquares[data.id].y;
+      const newX = data.x;
+      const newY = data.y;
+
+      // Log the movement
+      console.log(
+        `Square with ID ${data.id} moved from (${oldX}, ${oldY}) to (${newX}, ${newY})`
+      );
+
+      userSquares[data.id].x = newX;
+      userSquares[data.id].y = newY;
       // Broadcast new position to all users
       io.emit("square_moved", userSquares[data.id]);
     }
@@ -52,7 +62,7 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(3001, () => {
+server.listen(3001, "0.0.0.0", () => {
   console.log("Server is running on port 3001");
 });
 
