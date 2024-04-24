@@ -3,7 +3,7 @@ import "./styles.css";
 import io from "socket.io-client";
 import { useEffect, useState } from "react";
 
-const socket = io.connect("http://192.168.178.27:3000/");
+const socket = io.connect("http://192.168.178.27:3001/");
 
 export default function App() {
   const [squares, setSquares] = useState({});
@@ -34,6 +34,24 @@ export default function App() {
 
       // Emit new position to server
       socket.emit("move_square", { id: socket.id, x: newX, y: newY });
+
+      function randColor() {
+        return (
+          "#" +
+          Math.floor(Math.random() * 16777215)
+            .toString(16)
+            .padStart(6, "0")
+            .toUpperCase()
+        );
+      }
+
+      if (
+        Object.values(squares).filter(
+          (square) => square.x === newX && square.y === newY
+        ).length > 0
+      ) {
+        document.body.style.backgroundColor = randColor();
+      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
