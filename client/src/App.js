@@ -3,7 +3,7 @@ import "./styles.css";
 import io from "socket.io-client";
 import { useEffect, useState } from "react";
 
-const socket = io.connect("http://192.168.178.27:3001/");
+const socket = io.connect(`http://${window.location.hostname}:3001`);
 
 export default function App() {
   const [squares, setSquares] = useState({});

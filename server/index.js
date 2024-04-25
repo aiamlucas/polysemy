@@ -14,39 +14,39 @@ const io = new Server(server, {
   },
 });
 
-const ARDUINO_PORT = "/dev/ttyACM1"; // verity the port!
-const arduino = new SerialPort({
-  path: ARDUINO_PORT,
-  baudRate: 9600,
-});
+// const ARDUINO_PORT = "/dev/ttyACM1"; // verity the port!
+// const arduino = new SerialPort({
+//   path: ARDUINO_PORT,
+//   baudRate: 9600,
+// });
 
-arduino.on("open", function () {
-  console.log(`Connected to ${ARDUINO_PORT}`);
-});
+// arduino.on("open", function () {
+//   console.log(`Connected to ${ARDUINO_PORT}`);
+// });
 
-arduino.on("error", function (err) {
-  console.error("Failed to open port:", err.message);
-});
+// arduino.on("error", function (err) {
+//   console.error("Failed to open port:", err.message);
+// });
 
-function setLightColorByRGB(r, g, b) {
-  const commands = [`S1,${r}\n`, `S2,${g}\n`, `S3,${b}\n`];
+// function setLightColorByRGB(r, g, b) {
+//   const commands = [`S1,${r}\n`, `S2,${g}\n`, `S3,${b}\n`];
 
-  commands.forEach((command, index) => {
-    setTimeout(() => {
-      arduino.write(command, (err) => {
-        if (err) {
-          console.error(`Failed to write command ${command}:`, err.message);
-        }
-      });
-      console.log(`Sent command: ${command}`);
-    }, index * 1000); // Adjust the delay (in milliseconds) as needed
-  });
+//   commands.forEach((command, index) => {
+//     setTimeout(() => {
+//       arduino.write(command, (err) => {
+//         if (err) {
+//           console.error(`Failed to write command ${command}:`, err.message);
+//         }
+//       });
+//       console.log(`Sent command: ${command}`);
+//     }, index * 1000); // Adjust the delay (in milliseconds) as needed
+//   });
 
-  console.log(`Set light to RGB: (${r}, ${g}, ${b})`);
-}
+//   console.log(`Set light to RGB: (${r}, ${g}, ${b})`);
+// }
 
 //setting RGBW to blue for testing
-setLightColorByRGB(0, 0, 255);
+// setLightColorByRGB(0, 0, 255);
 
 let userSquares = {}; // Store squares with positions and properties
 
