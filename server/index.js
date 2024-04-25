@@ -85,8 +85,24 @@ io.on("connection", (socket) => {
       userSquares[data.id].y = newY;
       // Broadcast new position to all users
       io.emit("square_moved", userSquares[data.id]);
+
+      // Change background color if squares align
+      if (
+        Object.values(userSquares).filter(
+          (square) => square.x === newX && square.y === newY
+        ).length > 1
+      ) {
+        io.emit("changeBackgroundColor", { color: randColor() });
+      }
     }
   });
+
+  // Random color
+  function randColor() {
+    return `rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(
+      Math.random() * 256
+    )}, ${Math.floor(Math.random() * 256)})`;
+  }
 
   socket.on("disconnect", () => {
     console.log(`User Disconnected: ${socket.id}`);
