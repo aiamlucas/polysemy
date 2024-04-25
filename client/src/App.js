@@ -34,24 +34,6 @@ export default function App() {
 
       // Emit new position to server
       socket.emit("move_square", { id: socket.id, x: newX, y: newY });
-
-      function randColor() {
-        return (
-          "#" +
-          Math.floor(Math.random() * 16777215)
-            .toString(16)
-            .padStart(6, "0")
-            .toUpperCase()
-        );
-      }
-
-      if (
-        Object.values(squares).filter(
-          (square) => square.x === newX && square.y === newY
-        ).length > 0
-      ) {
-        document.body.style.backgroundColor = randColor();
-      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
@@ -66,6 +48,10 @@ export default function App() {
 
     socket.on("square_moved", (square) => {
       setSquares((prev) => ({ ...prev, [square.id]: square }));
+    });
+
+    socket.on("changeBackgroundColor", ({ color }) => {
+      document.body.style.backgroundColor = color;
     });
 
     socket.on("remove_square", (id) => {
