@@ -50,13 +50,10 @@ Ex from a visualisation
 
 ```mermaid
 graph TD;
-    A(First User) --> |10px| B(Second User);
-    A --> |10px| C(Third User);
-    A --> |10px| D(Fourth User);
-
-    style A,B,C,D fill:#f9f,stroke:#333,stroke-width:4px,stroke-dasharray: 5 5;
-
-
+    A(First User) -->|Sequential Connection| B(Second User);
+    B -->|Sequential Connection| C(Third User);
+    C -->|Sequential Connection| D(Fourth User);
+    D -->|Sequential Connection| E(Fifth User);
 ```
 
 ### Implementation Plan
