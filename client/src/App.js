@@ -50,7 +50,17 @@ export default function App() {
       setSquares((prev) => ({ ...prev, [square.id]: square }));
     });
 
-    socket.on("changeBackgroundColor", ({ color }) => {
+    socket.on("connect", () => {
+      console.log("Connected to server");
+    });
+
+    // socket.on("changeBackgroundColor", ({ color }) => {
+    //   document.body.style.backgroundColor = color;
+    // });
+
+    socket.on("changeBackgroundColor", ({ hue }) => {
+      // Convert hue to an HSL color
+      const color = `hsl(${hue}, 100%, 50%)`;
       document.body.style.backgroundColor = color;
     });
 
@@ -89,7 +99,7 @@ export default function App() {
 // import io from "socket.io-client";
 // import { useEffect, useState } from "react";
 
-// const socket = io.connect("http://localhost:3001");
+// const socket = io.connect(`http://${window.location.hostname}:3001`);
 
 // export default function App() {
 //   const [squares, setSquares] = useState({});
@@ -136,6 +146,10 @@ export default function App() {
 //       setSquares((prev) => ({ ...prev, [square.id]: square }));
 //     });
 
+//     socket.on("changeBackgroundColor", ({ color }) => {
+//       document.body.style.backgroundColor = color;
+//     });
+
 //     socket.on("remove_square", (id) => {
 //       setSquares((prev) => {
 //         const newState = { ...prev };
@@ -154,14 +168,11 @@ export default function App() {
 //       {Object.values(squares).map((square) => (
 //         <div
 //           key={square.id}
+//           className="square" // Apply the 'square' CSS class
 //           style={{
 //             left: `${square.x}px`,
 //             top: `${square.y}px`,
-//             position: "absolute",
-//             width: "50px",
-//             height: "50px",
 //             backgroundColor: square.color,
-//             opacity: 0.6, // Set opacity to 60%
 //           }}
 //         />
 //       ))}
