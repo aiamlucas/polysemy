@@ -50,10 +50,11 @@ Ex from a visualisation
 
 ```mermaid
 graph TD;
-    A(First User) -->|Sequential Connection| B(Second User);
-    B -->|Sequential Connection| C(Third User);
-    C -->|Sequential Connection| D(Fourth User);
-    D -->|Sequential Connection| E(Fifth User);
+    A(First User) -.->|Sequential Connection| B(Second User);
+    A -.->|Random Position| C(Third User);
+    B -.->|Sequential Connection| D(Fourth User);
+    C -.->|Random Position| E(Fifth User);
+
 ```
 
 ### Implementation Plan
