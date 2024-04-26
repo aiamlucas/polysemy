@@ -26,9 +26,41 @@ The server emits the following socket events:
 
 Users can move their squares around the canvas by pressing arrow keys. The server tracks square movements and broadcasts updates to ensure synchronized movement for all connected clients.
 
-## Deployment
+## Additional Implementation: Curved Line Connections
 
-You can deploy this server to a hosting provider to make it accessible to other users over the internet. Follow the deployment instructions provided by your chosen hosting provider.
+To enhance the visual representation of user interactions on the shared canvas, we want to implement curved line connections between squares, indicating the relationship between the last user and the next user.
+
+### Visual Representation
+
+We plan to use the xyflow library (https://github.com/xyflow/xyflow) to achieve this. The library provides powerful tools for building node-based UIs with React or Svelte, which will enable us to create the desired curved line connections.
+
+### Implementation Plan
+
+We will update the canvas rendering logic to include curved line connections between squares, connecting each square to the next square in sequence. This will provide a clear visual indication of the flow of user interactions on the canvas.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
+## Additional Implementation: Curved Line Connections
+
+To enhance the visual representation of user interactions on the shared canvas, we want to implement curved line connections between squares, indicating the relationship between the last user and the next user.
+
+Ex from a visualisation
+
+```mermaid
+graph TD;
+    A(First User)-->B(Curved Line);
+    B-->C(Second User);
+    C-->D(Curved Line);
+    D-->E(Third User);
+
+
+```
+
+### Implementation Plan
+
+We plan to use the xyflow library (https://github.com/xyflow/xyflow) to achieve this. The library provides powerful tools for building node-based UIs with React or Svelte, which will enable us to create the desired curved line connections.
 
 ## License
 
