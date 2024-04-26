@@ -49,11 +49,9 @@ To enhance the visual representation of user interactions on the shared canvas, 
 Ex from a visualisation
 
 ```mermaid
-graph TD;
-    A(First User) -.->|Sequential Connection| B(Second User);
-    A -.->|Random Position| C(Third User);
-    B -.->|Sequential Connection| D(Fourth User);
-    C -.->|Random Position| E(Fifth User);
+flowchart TD
+    A-->B
+    B-->C-->A
 
 ```
 
