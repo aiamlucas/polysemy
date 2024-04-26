@@ -14,7 +14,9 @@ const io = new Server(server, {
   },
 });
 
-// const ARDUINO_PORT = "/dev/ttyACM1"; // verify the port!
+// ARDUINO -------------------------------------------------
+
+// const ARDUINO_PORT = "/dev/ttyACM0"; // verify the port!
 // const arduino = new SerialPort({
 //   path: ARDUINO_PORT,
 //   baudRate: 9600,
@@ -28,25 +30,7 @@ const io = new Server(server, {
 //   console.error("Failed to open port:", err.message);
 // });
 
-// function setLightColorByRGB(r, g, b) {
-//   const commands = [`S1,${r}\n`, `S2,${g}\n`, `S3,${b}\n`];
-
-//   commands.forEach((command, index) => {
-//     setTimeout(() => {
-//       arduino.write(command, (err) => {
-//         if (err) {
-//           console.error(`Failed to write command ${command}:`, err.message);
-//         }
-//       });
-//       console.log(`Sent command: ${command}`);
-//     }, index * 1000); // Adjust the delay (in milliseconds) as needed
-//   });
-
-//   console.log(`Set light to RGB: (${r}, ${g}, ${b})`);
-// }
-
-//setting RGBW to blue for testing
-// setLightColorByRGB(0, 0, 255);
+// --------------------------------------------------------
 
 let userSquares = {}; // Store squares with positions and properties
 let currentHue = 0;
@@ -54,270 +38,163 @@ const hueStep = 1; // Increment step for hue value
 let transitionInterval = null;
 
 io.on("connection", (socket) => {
-  // Emit the current background color to the new user
   socket.emit("currentBackgroundColor", { hue: currentHue });
 
-  // SQUARES IN HSL Color Space
-  // Assign a random color and initial position to each new user
   const initialSquare = {
     id: socket.id,
-    x: 50, // Starting X position
-    y: 50, // Starting Y position
+    x: 50,
+    y: 50,
     color: `hsla(${Math.floor(
       Math.random() * 360
-    )}, 100%, 50%, ${randomOpacity()})`, // Random color with random HSL values and random opacity
+    )}, 100%, 50%, ${randomOpacity()})`,
   };
   userSquares[socket.id] = initialSquare;
-
-  // Random opacity value between 20 and 80 percent
-  function randomOpacity() {
-    const minOpacity = 20; // Minimum opacity
-    const maxOpacity = 80; // Maximum opacity
-    const opacityRange = maxOpacity - minOpacity; // Range of opacity values
-    const randomOffset = Math.floor(Math.random() * (opacityRange + 1)); // Random offset within the range
-    const opacity = minOpacity + randomOffset; // Calculate the final opacity
-    return opacity / 100; // Convert opacity to a fraction
-  }
-
-  //   // --------- SQUARES IN RGB VALUES ??????????? -----
-
-  //   // // Assign a random color and initial position to each new user
-  //   // const initialSquare = {
-  //   //   id: socket.id,
-  //   //   x: 50, // Starting X position
-  //   //   y: 50, // Starting Y position
-  //   //   color: `rgba(${Math.floor(Math.random() * 256)}, ${Math.floor(
-  //   //     Math.random() * 256
-  //   //   )}, ${Math.floor(Math.random() * 256)}, ${randomOpacity() / 100})`, // Random color with random RGB values and random opacity
-  //   // };
-  //   // userSquares[socket.id] = initialSquare;
-
-  //   // // Random opacity value between 20 and 80 percent
-  //   // function randomOpacity() {
-  //   //   const minOpacity = 50; // Minimum opacity
-  //   //   const maxOpacity = 70; // Maximum opacity
-  //   //   const opacityRange = maxOpacity - minOpacity; // Range of opacity values
-  //   //   const randomOffset = Math.floor(Math.random() * (opacityRange + 1)); // Random offset within the range
-  //   //   const opacity = minOpacity + randomOffset; // Calculate the final opacity
-  //   //   return opacity;
-  //   // }
-  //   // --------------------------------------------------
-
-  // Emit the list of all squares to the new user
   socket.emit("all_squares", userSquares);
 
   socket.on("move_square", (data) => {
     if (userSquares[data.id]) {
-      // Update square position
-      const oldX = userSquares[data.id].x;
-      const oldY = userSquares[data.id].y;
-      const newX = data.x;
-      const newY = data.y;
-
-      // Log the movement
-      console.log(
-        `Square with ID ${data.id} moved from (${oldX}, ${oldY}) to (${newX}, ${newY})`
-      );
-
-      userSquares[data.id].x = newX;
-      userSquares[data.id].y = newY;
-      // Broadcast new position to all users
-      io.emit("square_moved", userSquares[data.id]);
-
-      // Check if squares align
-      const alignedSquares = Object.values(userSquares).filter(
-        (square) => square.x === newX && square.y === newY
-      );
-
-      console.log("Aligned squares:", alignedSquares);
-
-      if (alignedSquares.length > 1) {
-        // If squares align, update the background color
-        io.emit("changeBackgroundColor", { hue: randHue() });
-      }
+      updateSquarePosition(data);
+      checkAndHandleAlignment(data.id);
     }
   });
 
-  // Start the smooth transition when the first user connects
-  if (Object.keys(userSquares).length === 1) {
-    startTransition();
+  function randomOpacity() {
+    const minOpacity = 20;
+    const maxOpacity = 80;
+    return (
+      (minOpacity + Math.floor(Math.random() * (maxOpacity - minOpacity + 1))) /
+      100
+    );
   }
 
-  // Random hue value between 0 and 360 degrees
-  function randHue() {
-    currentHue = (currentHue + hueStep) % 360;
-    return currentHue;
+  function updateSquarePosition(data) {
+    const { id, x, y } = data;
+    const square = userSquares[id];
+    console.log(
+      `Square with ID ${id} moved from (${square.x}, ${square.y}) to (${x}, ${y})`
+    );
+    square.x = x;
+    square.y = y;
+    io.emit("square_moved", square);
   }
 
-  // Start the smooth transition
-  function startTransition() {
-    // Check if transition interval is not already running
+  function checkAndHandleAlignment(id) {
+    const square = userSquares[id];
+    const alignedSquares = Object.values(userSquares).filter(
+      (s) => s.x === square.x && s.y === square.y
+    );
+    if (alignedSquares.length > 1) {
+      currentHue = getRandomHueInRange(0, 360);
+
+      // ARDUINO --------------------
+      // const rgb = hslToRgb(currentHue, 100, 50); // Convert HSL to RGB
+      // setLightColorByRGB(...rgb); // Send RGB values to Arduino
+      // ----------------------------
+
+      io.emit("changeBackgroundColor", { hue: currentHue });
+    }
+
+    ensureTransitionRunning();
+  }
+
+  function ensureTransitionRunning() {
     if (!transitionInterval) {
-      let previousAlignment = false; // Track previous alignment state
-
-      // Set up the interval for transitioning
-      transitionInterval = setInterval(() => {
-        const currentAlignment = checkAlignment(); // Check if squares are aligned
-
-        // If squares are aligned and the alignment has changed from previous state, change background color
-        if (currentAlignment && !previousAlignment) {
-          currentHue = getRandomHueInRange(0, 360); // Calculate new hue
-        }
-        // If squares are not aligned, continue transitioning smoothly
-        else if (!currentAlignment) {
-          currentHue = (currentHue + hueStep) % 360; // Smooth transition
-        }
-
-        // Update previous alignment state
-        previousAlignment = currentAlignment;
-
-        // Emit the new background color to all clients
-        io.emit("changeBackgroundColor", { hue: currentHue });
-      }, 100); // Adjust the interval for smoother transition
+      startTransition();
     }
   }
 
-  // Check if any squares are aligned
-  function checkAlignment() {
-    for (const square of Object.values(userSquares)) {
-      const alignedSquares = Object.values(userSquares).filter(
-        (s) => s.x === square.x && s.y === square.y
-      );
-      if (alignedSquares.length > 1) {
-        return true; // Squares are aligned
-      }
-    }
-    return false; // Squares are not aligned
+  function startTransition() {
+    transitionInterval = setInterval(() => {
+      currentHue = (currentHue + hueStep) % 360;
+
+      // ARDUINO --------------------
+      // const rgb = hslToRgb(currentHue, 100, 50); // Convert HSL to RGB
+      // setLightColorByRGB(...rgb); // Send RGB values to Arduino
+      // ----------------------------
+
+      io.emit("changeBackgroundColor", { hue: currentHue });
+    }, 100);
   }
 
-  // Generate a random hue value within a specified range
   function getRandomHueInRange(min, max) {
-    return currentHue + Math.floor(Math.random() * (max - min)) + min;
+    return (currentHue + Math.floor(Math.random() * (max - min))) % 360;
   }
 
   socket.on("disconnect", () => {
     console.log(`User Disconnected: ${socket.id}`);
-    // Remove square
     delete userSquares[socket.id];
-    // Notify all users about the disconnected user
     io.emit("remove_square", socket.id);
-
-    // Stop the transition if no users are connected
-    if (Object.keys(userSquares).length === 0) {
-      stopTransition();
-    }
+    stopTransitionIfNeeded();
   });
 });
 
-// Stop the smooth transition
-function stopTransition() {
-  clearInterval(transitionInterval);
-  transitionInterval = null;
+function stopTransitionIfNeeded() {
+  if (Object.keys(userSquares).length === 0 && transitionInterval) {
+    clearInterval(transitionInterval);
+    transitionInterval = null;
+  }
+}
+
+function hslToRgb(h, s, l) {
+  s /= 100;
+  l /= 100;
+  let c = (1 - Math.abs(2 * l - 1)) * s;
+  let x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+  let m = l - c / 2;
+  let r = 0;
+  let g = 0;
+  let b = 0;
+
+  if (0 <= h && h < 60) {
+    r = c;
+    g = x;
+    b = 0;
+  } else if (60 <= h && h < 120) {
+    r = x;
+    g = c;
+    b = 0;
+  } else if (120 <= h && h < 180) {
+    r = 0;
+    g = c;
+    b = x;
+  } else if (180 <= h && h < 240) {
+    r = 0;
+    g = x;
+    b = c;
+  } else if (240 <= h && h < 300) {
+    r = x;
+    g = 0;
+    b = c;
+  } else if (300 <= h && h < 360) {
+    r = c;
+    g = 0;
+    b = x;
+  }
+
+  r = Math.round((r + m) * 255);
+  g = Math.round((g + m) * 255);
+  b = Math.round((b + m) * 255);
+
+  return [r, g, b];
+}
+
+function setLightColorByRGB(r, g, b) {
+  const commands = [`S1,${r}\n`, `S2,${g}\n`, `S3,${b}\n`];
+
+  commands.forEach((command, index) => {
+    setTimeout(() => {
+      arduino.write(command, (err) => {
+        if (err) {
+          console.error(`Failed to write command ${command}:`, err.message);
+        }
+      });
+      console.log(`Sent command: ${command}`);
+    }, index * 100);
+  });
+
+  console.log(`Set light to RGB: (${r}, ${g}, ${b})`);
 }
 
 server.listen(3001, "0.0.0.0", () => {
   console.log("Server is running on port 3001");
 });
-
-// // const ARDUINO_PORT = "/dev/ttyACM1"; // verity the port!
-// // const arduino = new SerialPort({
-// //   path: ARDUINO_PORT,
-// //   baudRate: 9600,
-// // });
-
-// // arduino.on("open", function () {
-// //   console.log(`Connected to ${ARDUINO_PORT}`);
-// // });
-
-// // arduino.on("error", function (err) {
-// //   console.error("Failed to open port:", err.message);
-// // });
-
-// // function setLightColorByRGB(r, g, b) {
-// //   const commands = [`S1,${r}\n`, `S2,${g}\n`, `S3,${b}\n`];
-
-// //   commands.forEach((command, index) => {
-// //     setTimeout(() => {
-// //       arduino.write(command, (err) => {
-// //         if (err) {
-// //           console.error(`Failed to write command ${command}:`, err.message);
-// //         }
-// //       });
-// //       console.log(`Sent command: ${command}`);
-// //     }, index * 1000); // Adjust the delay (in milliseconds) as needed
-// //   });
-
-// //   console.log(`Set light to RGB: (${r}, ${g}, ${b})`);
-// // }
-
-// //setting RGBW to blue for testing
-// // setLightColorByRGB(0, 0, 255);
-
-// let userSquares = {}; // Store squares with positions and properties
-
-// io.on("connection", (socket) => {
-//   console.log(`User Connected: ${socket.id}`);
-
-//   // Assign a random color and initial position to each new user
-//   const initialSquare = {
-//     id: socket.id,
-//     x: 50, // Starting X position
-//     y: 50, // Starting Y position
-//     color: `hsla(${Math.random() * 360}, 100%, 50%, 0.6)`, // Random color with 60% opacity
-//   };
-//   userSquares[socket.id] = initialSquare;
-
-//   // Emit the list of all squares to the new user
-//   socket.emit("all_squares", userSquares);
-
-//   // Broadcast new user's square to all other users
-//   socket.broadcast.emit("new_square", initialSquare);
-
-//   socket.on("move_square", (data) => {
-//     if (userSquares[data.id]) {
-//       // Update square position
-//       const oldX = userSquares[data.id].x;
-//       const oldY = userSquares[data.id].y;
-//       const newX = data.x;
-//       const newY = data.y;
-
-//       // Log the movement
-//       console.log(
-//         `Square with ID ${data.id} moved from (${oldX}, ${oldY}) to (${newX}, ${newY})`
-//       );
-
-//       userSquares[data.id].x = newX;
-//       userSquares[data.id].y = newY;
-//       // Broadcast new position to all users
-//       io.emit("square_moved", userSquares[data.id]);
-
-//       // Change background color if squares align
-//       if (
-//         Object.values(userSquares).filter(
-//           (square) => square.x === newX && square.y === newY
-//         ).length > 1
-//       ) {
-//         io.emit("changeBackgroundColor", { color: randColor() });
-//       }
-//     }
-//   });
-
-//   // Random color
-//   function randColor() {
-//     return `rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(
-//       Math.random() * 256
-//     )}, ${Math.floor(Math.random() * 256)})`;
-//   }
-
-//   socket.on("disconnect", () => {
-//     console.log(`User Disconnected: ${socket.id}`);
-//     // Remove square
-//     delete userSquares[socket.id];
-//     // Notify all users about the disconnected user
-//     io.emit("remove_square", socket.id);
-//   });
-// });
-
-// server.listen(3001, "0.0.0.0", () => {
-//   console.log("Server is running on port 3001");
-// });
