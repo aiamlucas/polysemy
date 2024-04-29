@@ -16,19 +16,19 @@ const io = new Server(server, {
 
 // ARDUINO -------------------------------------------------
 
-// const ARDUINO_PORT = "/dev/ttyACM0"; // verify the port!
-// const arduino = new SerialPort({
-//   path: ARDUINO_PORT,
-//   baudRate: 9600,
-// });
+const ARDUINO_PORT = "/dev/ttyACM0"; // verify the port!
+const arduino = new SerialPort({
+  path: ARDUINO_PORT,
+  baudRate: 9600,
+});
 
-// arduino.on("open", function () {
-//   console.log(`Connected to ${ARDUINO_PORT}`);
-// });
+arduino.on("open", function () {
+  console.log(`Connected to ${ARDUINO_PORT}`);
+});
 
-// arduino.on("error", function (err) {
-//   console.error("Failed to open port:", err.message);
-// });
+arduino.on("error", function (err) {
+  console.error("Failed to open port:", err.message);
+});
 
 // --------------------------------------------------------
 
@@ -87,8 +87,8 @@ io.on("connection", (socket) => {
       currentHue = getRandomHueInRange(0, 360);
 
       // ARDUINO --------------------
-      // const rgb = hslToRgb(currentHue, 100, 50); // Convert HSL to RGB
-      // setLightColorByRGB(...rgb); // Send RGB values to Arduino
+      const rgb = hslToRgb(currentHue, 100, 50); // Convert HSL to RGB
+      setLightColorByRGB(...rgb); // Send RGB values to Arduino
       // ----------------------------
 
       io.emit("changeBackgroundColor", { hue: currentHue });
@@ -108,8 +108,8 @@ io.on("connection", (socket) => {
       currentHue = (currentHue + hueStep) % 360;
 
       // ARDUINO --------------------
-      // const rgb = hslToRgb(currentHue, 100, 50); // Convert HSL to RGB
-      // setLightColorByRGB(...rgb); // Send RGB values to Arduino
+      const rgb = hslToRgb(currentHue, 100, 50); // Convert HSL to RGB
+      setLightColorByRGB(...rgb); // Send RGB values to Arduino
       // ----------------------------
 
       io.emit("changeBackgroundColor", { hue: currentHue });
