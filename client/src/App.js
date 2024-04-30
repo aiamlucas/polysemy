@@ -67,9 +67,11 @@ export default function App() {
   );
 
   const requestPermission = useCallback(async () => {
+    console.log("Attempting to request permission..."); // Debug log
     if (typeof DeviceOrientationEvent.requestPermission === "function") {
       DeviceOrientationEvent.requestPermission()
         .then((permission) => {
+          console.log(`Permission result: ${permission}`); // Debug log
           if (permission === "granted") {
             window.addEventListener(
               "deviceorientation",
@@ -80,8 +82,12 @@ export default function App() {
             alert("Permission not granted to use gyroscope.");
           }
         })
-        .catch(console.error);
+        .catch((error) => {
+          console.error("Permission request failed", error);
+          alert(`Permission request error: ${error}`);
+        });
     } else {
+      console.log("Using fallback permission request."); // Debug log
       window.addEventListener("deviceorientation", handleDeviceOrientation);
       setGyroscopeEnabled(true);
     }
