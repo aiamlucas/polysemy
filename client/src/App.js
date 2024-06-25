@@ -3,7 +3,14 @@ import io from "socket.io-client";
 import "./App.css";
 import "./styles.css";
 
-const socket = io.connect(`http://${window.location.hostname}:3001`);
+// // const socket = io.connect(`http://${window.location.hostname}:3001`);
+// const socket = io.connect(`https://${window.location.hostname}:3001`);
+
+// Connect to the server using HTTPS
+const socket = io.connect(`https://${window.location.hostname}:443`, {
+  secure: true,
+  rejectUnauthorized: false, // This may be needed depending on your server setup
+});
 
 export default function App() {
   const [gyroscopeEnabled, setGyroscopeEnabled] = useState(false);
